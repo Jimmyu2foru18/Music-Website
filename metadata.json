@@ -1,0 +1,5 @@
+{
+  "name": "Melody View",
+  "description": "A full-stack music discovery and playlist management platform featuring Spotify and YouTube integration, community reviews, and daily song recommendations.",
+  "requestFramePermissions": []
+}
