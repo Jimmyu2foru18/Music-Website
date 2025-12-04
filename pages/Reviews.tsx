@@ -103,7 +103,7 @@ const Reviews: React.FC = () => {
                         
                         {selectedSong ? (
                             <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-red-500/50 relative group">
-                                <img src={selectedSong.albumCover} alt="" className="w-12 h-12 rounded object-cover" />
+                                <img src={selectedSong.albumCover} alt="" className="w-12 h-12 rounded object-cover" referrerPolicy="no-referrer" />
                                 <div className="overflow-hidden">
                                     <h4 className="font-bold text-white text-sm truncate">{selectedSong.title}</h4>
                                     <p className="text-xs text-gray-400 truncate">{selectedSong.artist}</p>
@@ -149,7 +149,7 @@ const Reviews: React.FC = () => {
                                         onClick={() => handleSelectSong(song)}
                                         className="w-full text-left flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
                                     >
-                                        <img src={song.albumCover} alt="" className="w-10 h-10 rounded object-cover" />
+                                        <img src={song.albumCover} alt="" className="w-10 h-10 rounded object-cover" referrerPolicy="no-referrer" />
                                         <div className="flex-grow min-w-0">
                                             <p className="text-white text-sm font-bold truncate">{song.title}</p>
                                             <p className="text-gray-400 text-xs truncate">{song.artist}</p>
@@ -210,7 +210,12 @@ const Reviews: React.FC = () => {
                     <div className="flex flex-col sm:flex-row gap-6">
                         {/* Song Art (Clickable to play) */}
                         <div className="flex-shrink-0 relative w-full sm:w-32 aspect-square rounded-xl overflow-hidden cursor-pointer" onClick={() => window.playSong && window.playSong(review.song)}>
-                             <img src={review.song.albumCover} alt={review.song.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                             <img 
+                                src={review.song.albumCover} 
+                                alt={review.song.title} 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                referrerPolicy="no-referrer"
+                             />
                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                  <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full text-white">
                                      <Music2 size={24} fill="currentColor" />
@@ -240,7 +245,7 @@ const Reviews: React.FC = () => {
                             </p>
 
                             <div className="flex items-center gap-3 pt-2 border-t border-white/5">
-                                <img src={review.userAvatar} alt={review.username} className="w-8 h-8 rounded-full border border-white/10" />
+                                <img src={review.userAvatar} alt={review.username} className="w-8 h-8 rounded-full border border-white/10" referrerPolicy="no-referrer" />
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold text-white">{review.username}</span>
                                     <span className="text-[10px] text-gray-500">{review.date}</span>

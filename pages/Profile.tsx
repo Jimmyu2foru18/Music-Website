@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Edit2, Save, X, Settings, LogOut, Music2, Check } from 'lucide-react';
-import { User, Playlist } from '../types';
+import { Camera, Edit2, Save, X, Settings, LogOut, Music2, Check, Plus, Trash2, Play, Youtube } from 'lucide-react';
+import { User, Playlist, Song } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { dbUpdateUser, dbGetPlaylists } from '../services/db';
+import { dbUpdateUser, dbGetPlaylists, dbCreatePlaylist, dbDeletePlaylist, dbRemoveSongFromPlaylist } from '../services/db';
 import { getSpotifyAuthUrl, isSpotifyConnected } from '../services/api';
 
 const Profile: React.FC = () => {
@@ -13,6 +13,11 @@ const Profile: React.FC = () => {
   const [tempUser, setTempUser] = useState<User | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [spotifyConnected, setSpotifyConnected] = useState(false);
+  
+  // Playlist Modal States
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [viewingPlaylist, setViewingPlaylist] = useState<Playlist | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -20,13 +25,18 @@ const Profile: React.FC = () => {
         return;
     }
     setTempUser(user);
-    // Load playlists from DB
-    const allPlaylists = dbGetPlaylists();
-    setPlaylists(allPlaylists.filter(p => p.creatorId === user.id));
+    loadPlaylists();
     
     // Check Spotify Connection
     setSpotifyConnected(isSpotifyConnected());
   }, [user, navigate]);
+
+  const loadPlaylists = () => {
+      if(user) {
+        const allPlaylists = dbGetPlaylists();
+        setPlaylists(allPlaylists.filter(p => p.creatorId === user.id));
+      }
+  };
 
   if (!user || !tempUser) return null;
 
@@ -59,8 +69,48 @@ const Profile: React.FC = () => {
       window.location.href = getSpotifyAuthUrl();
   };
 
+  // Playlist Management
+  const handleCreatePlaylist = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newPlaylistName.trim()) return;
+      
+      const newPlaylist: Playlist = {
+          id: `p_${Date.now()}`,
+          name: newPlaylistName,
+          creatorId: user.id,
+          songs: [],
+          coverUrl: 'https://picsum.photos/300/300?grayscale', // Default
+          platform: 'mixed'
+      };
+      
+      dbCreatePlaylist(newPlaylist);
+      loadPlaylists();
+      setNewPlaylistName('');
+      setIsCreatingPlaylist(false);
+  };
+
+  const handleDeletePlaylist = (id: string) => {
+      if(confirm('Are you sure you want to delete this playlist?')) {
+          dbDeletePlaylist(id);
+          setViewingPlaylist(null);
+          loadPlaylists();
+      }
+  };
+
+  const handleRemoveSong = (playlistId: string, songId: string) => {
+      dbRemoveSongFromPlaylist(playlistId, songId);
+      // Update local view
+      if (viewingPlaylist) {
+          setViewingPlaylist({
+              ...viewingPlaylist,
+              songs: viewingPlaylist.songs.filter(s => s.id !== songId)
+          });
+      }
+      loadPlaylists();
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative">
       
       {/* Profile Header */}
       <div className="relative mb-20">
@@ -80,6 +130,7 @@ const Profile: React.FC = () => {
                             src={isEditing ? tempUser.avatarUrl : user.avatarUrl} 
                             alt={user.username} 
                             className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
                         />
                     </div>
                     {isEditing && (
@@ -196,36 +247,149 @@ const Profile: React.FC = () => {
 
          {/* Content Area */}
          <div className="lg:col-span-3">
-             <h2 className="text-2xl font-bold text-white mb-6">My Library</h2>
+             <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">My Library</h2>
+                {isCreatingPlaylist ? (
+                    <form onSubmit={handleCreatePlaylist} className="flex gap-2 animate-in fade-in slide-in-from-right duration-200">
+                        <input 
+                            type="text" 
+                            placeholder="Playlist Name..."
+                            autoFocus
+                            className="bg-black border border-white/20 rounded-lg px-3 py-1.5 text-white text-sm focus:border-red-500 focus:outline-none"
+                            value={newPlaylistName}
+                            onChange={e => setNewPlaylistName(e.target.value)}
+                        />
+                        <button type="submit" className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm font-bold">Create</button>
+                        <button type="button" onClick={() => setIsCreatingPlaylist(false)} className="bg-white/10 hover:bg-white/20 text-white rounded-lg px-3 py-1.5 text-sm">Cancel</button>
+                    </form>
+                ) : (
+                    <button 
+                        onClick={() => setIsCreatingPlaylist(true)} 
+                        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm font-bold transition-colors"
+                    >
+                        <Plus size={16} /> New Playlist
+                    </button>
+                )}
+             </div>
              
              {/* Playlist Grid */}
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                  {playlists.map(playlist => (
-                     <div key={playlist.id} className="bg-neutral-900 border border-white/5 rounded-lg overflow-hidden hover:border-red-500/50 transition-colors">
+                     <button 
+                        key={playlist.id} 
+                        onClick={() => setViewingPlaylist(playlist)}
+                        className="bg-neutral-900 border border-white/5 rounded-lg overflow-hidden hover:border-red-500/50 transition-colors group text-left relative"
+                     >
                          <div className="h-40 bg-gray-800 relative">
-                             <img src={playlist.coverUrl} alt={playlist.name} className="w-full h-full object-cover" />
-                             <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white uppercase font-bold">
-                                 {playlist.platform}
+                             <img src={playlist.coverUrl} alt={playlist.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                             <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white uppercase font-bold flex items-center gap-1">
+                                {playlist.platform === 'spotify' && <Music2 size={10} className="text-green-500" />}
+                                {playlist.platform === 'youtube' && <Youtube size={10} className="text-red-500" />}
+                                {playlist.platform === 'mixed' && <span className="text-blue-400 text-[10px] font-bold">MIX</span>}
+                                {playlist.platform}
+                             </div>
+                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <div className="bg-white/20 backdrop-blur rounded-full p-2">
+                                    <Play size={24} className="text-white fill-current" />
+                                 </div>
                              </div>
                          </div>
                          <div className="p-4">
-                             <h3 className="font-bold text-white mb-1">{playlist.name}</h3>
+                             <h3 className="font-bold text-white mb-1 truncate">{playlist.name}</h3>
                              <p className="text-xs text-gray-400">{playlist.songs.length} songs</p>
                          </div>
-                     </div>
+                     </button>
                  ))}
                  
-                 {/* Add New Placeholder */}
-                 <button className="h-full min-h-[220px] bg-white/5 border border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-white hover:border-red-500 hover:bg-white/10 transition-all group">
-                     <div className="w-12 h-12 rounded-full border-2 border-gray-400 group-hover:border-red-500 flex items-center justify-center mb-2">
-                         <span className="text-2xl group-hover:text-red-500">+</span>
+                 {/* Empty State */}
+                 {playlists.length === 0 && (
+                     <div className="col-span-full py-12 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                         <Music2 size={48} className="mx-auto text-gray-600 mb-4" />
+                         <p className="text-gray-400">You haven't created any playlists yet.</p>
+                         <button onClick={() => setIsCreatingPlaylist(true)} className="text-red-500 hover:text-red-400 font-bold mt-2">Create one now</button>
                      </div>
-                     <span className="font-medium">Create Playlist</span>
-                 </button>
+                 )}
              </div>
          </div>
-
       </div>
+
+      {/* PLAYLIST DETAIL MODAL */}
+      {viewingPlaylist && (
+          <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-200">
+              <div className="bg-neutral-900 w-full max-w-4xl h-[80vh] rounded-2xl border border-white/10 flex flex-col overflow-hidden">
+                  
+                  {/* Header */}
+                  <div className="p-6 border-b border-white/10 bg-gradient-to-r from-red-900/20 to-neutral-900 flex justify-between items-start">
+                      <div className="flex gap-6 items-end">
+                          <img src={viewingPlaylist.coverUrl} className="w-40 h-40 rounded shadow-2xl object-cover border border-white/10" alt="" referrerPolicy="no-referrer" />
+                          <div>
+                              <p className="text-xs font-bold text-white uppercase tracking-widest mb-1">Playlist</p>
+                              <h2 className="text-4xl md:text-5xl font-black text-white mb-4">{viewingPlaylist.name}</h2>
+                              <div className="flex items-center gap-2 text-sm text-gray-400">
+                                  <span className="text-white font-bold">{user.username}</span>
+                                  <span>•</span>
+                                  <span>{viewingPlaylist.songs.length} songs</span>
+                              </div>
+                          </div>
+                      </div>
+                      <button onClick={() => setViewingPlaylist(null)} className="text-gray-400 hover:text-white bg-white/5 p-2 rounded-full">
+                          <X size={24} />
+                      </button>
+                  </div>
+
+                  {/* Songs List */}
+                  <div className="flex-grow overflow-y-auto p-6">
+                      {viewingPlaylist.songs.length === 0 ? (
+                          <div className="text-center py-20 text-gray-500">
+                              <p>This playlist is empty.</p>
+                              <p className="text-sm mt-2">Go to Search to add songs!</p>
+                              <button onClick={() => { setViewingPlaylist(null); navigate('/search'); }} className="mt-4 text-red-500 font-bold hover:underline">Search Songs</button>
+                          </div>
+                      ) : (
+                          <div className="space-y-1">
+                              {viewingPlaylist.songs.map((song, idx) => (
+                                  <div key={idx} className="group grid grid-cols-12 items-center gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                                      <div className="col-span-1 text-gray-500 text-center font-mono text-sm">{idx + 1}</div>
+                                      <div className="col-span-8 flex items-center gap-4">
+                                          <img src={song.albumCover} className="w-10 h-10 rounded object-cover" alt="" referrerPolicy="no-referrer" />
+                                          <div className="min-w-0">
+                                              <p className="text-white font-bold truncate cursor-pointer hover:underline" onClick={() => window.playSong && window.playSong(song)}>{song.title}</p>
+                                              <p className="text-gray-400 text-xs truncate">{song.artist}</p>
+                                          </div>
+                                      </div>
+                                      <div className="col-span-2 text-right">
+                                          {song.platform === 'spotify' ? <Music2 size={16} className="text-green-500 inline"/> : <Youtube size={16} className="text-red-500 inline"/>}
+                                      </div>
+                                      <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <button 
+                                            onClick={() => handleRemoveSong(viewingPlaylist.id, song.id)}
+                                            className="text-gray-500 hover:text-red-500"
+                                            title="Remove from playlist"
+                                          >
+                                              <Trash2 size={16} />
+                                          </button>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      )}
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="p-4 border-t border-white/10 bg-neutral-900 flex justify-between">
+                      <button onClick={() => handleDeletePlaylist(viewingPlaylist.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2 px-4 py-2 hover:bg-red-900/20 rounded">
+                          <Trash2 size={14} /> Delete Playlist
+                      </button>
+                      {viewingPlaylist.songs.length > 0 && (
+                          <button onClick={() => window.playSong && window.playSong(viewingPlaylist.songs[0])} className="bg-red-600 hover:bg-red-700 text-white rounded-full px-8 py-3 font-bold flex items-center gap-2 shadow-lg shadow-red-900/20">
+                             <Play size={18} fill="currentColor"/> Play All
+                          </button>
+                      )}
+                  </div>
+
+              </div>
+          </div>
+      )}
     </div>
   );
 };

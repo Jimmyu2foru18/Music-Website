@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search as SearchIcon, Loader } from 'lucide-react';
-import { searchMusic } from '../services/api';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Search as SearchIcon, Loader, AlertCircle } from 'lucide-react';
+import { searchMusic, isSpotifyConnected } from '../services/api';
 import { SongCard } from '../components/SongCard';
 import { Song } from '../types';
 
@@ -10,8 +10,10 @@ const Search: React.FC = () => {
   const query = searchParams.get('q');
   const [results, setResults] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
 
   useEffect(() => {
+    setSpotifyConnected(isSpotifyConnected());
     if (query) {
       setLoading(true);
       searchMusic(query).then(data => {
@@ -32,6 +34,21 @@ const Search: React.FC = () => {
             Showing results for: <span className="text-white font-bold">"{query}"</span>
         </p>
       </div>
+      
+      {!spotifyConnected && (
+        <div className="mb-8 bg-neutral-900/80 border border-yellow-600/50 rounded-lg p-4 flex items-center gap-4">
+            <div className="p-2 bg-yellow-600/20 rounded-full">
+                <AlertCircle className="text-yellow-500" size={24} />
+            </div>
+            <div className="flex-grow">
+                <h3 className="text-white font-bold text-sm">Spotify not connected</h3>
+                <p className="text-gray-400 text-xs">You are seeing limited results. Connect your Spotify account to search their full library.</p>
+            </div>
+            <Link to="/profile" className="px-4 py-2 bg-white text-black text-xs font-bold rounded-full hover:bg-gray-200">
+                Connect Now
+            </Link>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-20">

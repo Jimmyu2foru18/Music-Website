@@ -34,6 +34,7 @@ const SongOfTheDay: React.FC = () => {
                 src={data.today.song.albumCover} 
                 alt={data.today.song.title} 
                 className="w-full h-full object-cover rounded-xl shadow-xl group-hover:scale-105 transition-transform duration-500"
+                referrerPolicy="no-referrer"
               />
                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
                  <button onClick={() => handlePlay(data.today?.song)}>
@@ -74,7 +75,12 @@ const SongOfTheDay: React.FC = () => {
                         {item.date}
                     </div>
                     <div className="h-12 w-12 rounded overflow-hidden flex-shrink-0">
-                        <img src={item.song.albumCover} alt="" className="w-full h-full object-cover" />
+                        <img 
+                            src={item.song.albumCover} 
+                            alt="" 
+                            className="w-full h-full object-cover" 
+                            referrerPolicy="no-referrer"
+                        />
                     </div>
                     <div className="flex-grow">
                         <h4 className="text-white font-bold">{item.song.title}</h4>

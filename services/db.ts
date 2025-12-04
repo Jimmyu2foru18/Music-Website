@@ -115,6 +115,41 @@ export const dbCreatePlaylist = (playlist: Playlist) => {
   localStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
 };
 
+export const dbDeletePlaylist = (playlistId: string) => {
+  let playlists = dbGetPlaylists();
+  playlists = playlists.filter(p => p.id !== playlistId);
+  localStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
+};
+
+export const dbAddSongToPlaylist = (playlistId: string, song: Song) => {
+  const playlists = dbGetPlaylists();
+  const index = playlists.findIndex(p => p.id === playlistId);
+  if (index !== -1) {
+      // Avoid duplicates
+      if (!playlists[index].songs.some(s => s.id === song.id)) {
+          playlists[index].songs.push(song);
+          
+          // Update platform tag if mixed
+          const hasSpotify = playlists[index].songs.some(s => s.platform === 'spotify');
+          const hasYoutube = playlists[index].songs.some(s => s.platform === 'youtube');
+          if (hasSpotify && hasYoutube) playlists[index].platform = 'mixed';
+          else if (hasSpotify) playlists[index].platform = 'spotify';
+          else if (hasYoutube) playlists[index].platform = 'youtube';
+
+          localStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
+      }
+  }
+};
+
+export const dbRemoveSongFromPlaylist = (playlistId: string, songId: string) => {
+    const playlists = dbGetPlaylists();
+    const index = playlists.findIndex(p => p.id === playlistId);
+    if (index !== -1) {
+        playlists[index].songs = playlists[index].songs.filter(s => s.id !== songId);
+        localStorage.setItem(STORAGE_KEYS.PLAYLISTS, JSON.stringify(playlists));
+    }
+};
+
 export const dbGetReviews = (): Review[] => {
   const stored = localStorage.getItem(STORAGE_KEYS.REVIEWS);
   if (!stored) {

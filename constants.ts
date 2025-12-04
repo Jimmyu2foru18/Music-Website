@@ -27,7 +27,7 @@ export const FEATURED_SONGS: Song[] = [
     id: 's1',
     title: 'Midnight City',
     artist: 'M83',
-    albumCover: 'https://picsum.photos/300/300?random=2',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b273297a7a505b22591a457c7c35',
     platform: 'spotify',
     duration: '4:03',
     uri: 'spotify:track:1eyzqe2QqGZUmfcPZtrIyt'
@@ -36,7 +36,7 @@ export const FEATURED_SONGS: Song[] = [
     id: 's2',
     title: 'Bohemian Rhapsody',
     artist: 'Queen',
-    albumCover: 'https://picsum.photos/300/300?random=3',
+    albumCover: 'https://i.ytimg.com/vi/fJ9rUzIMcZQ/maxresdefault.jpg',
     platform: 'youtube',
     duration: '5:55',
     uri: 'fJ9rUzIMcZQ'
@@ -45,7 +45,7 @@ export const FEATURED_SONGS: Song[] = [
     id: 's3',
     title: 'Blinding Lights',
     artist: 'The Weeknd',
-    albumCover: 'https://picsum.photos/300/300?random=4',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
     platform: 'spotify',
     duration: '3:20',
     uri: 'spotify:track:0VjIjW4GlUZAMYd2vXMi3b'
@@ -54,9 +54,46 @@ export const FEATURED_SONGS: Song[] = [
     id: 's4',
     title: 'Hotel California',
     artist: 'Eagles',
-    albumCover: 'https://picsum.photos/300/300?random=5',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b273e35798a7263598f822187a53',
     platform: 'spotify',
     duration: '6:30',
+    uri: 'spotify:track:40riOy7x9W7GXjyGp4pjAv'
+  },
+  {
+    id: 's5',
+    title: 'Shape of You',
+    artist: 'Ed Sheeran',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+    platform: 'spotify',
+    duration: '3:53',
+    uri: 'spotify:track:7qiZfU4dY1lWllzX7mPBI3'
+  },
+  {
+    id: 's6',
+    title: 'Levitating',
+    artist: 'Dua Lipa',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b273bd26ede1ae69327010d49946',
+    platform: 'spotify',
+    duration: '3:23',
+    uri: 'spotify:track:5nujrmhLynf4yMoMtj8AQF'
+  },
+  {
+    id: 's7',
+    title: 'Despacito',
+    artist: 'Luis Fonsi',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b2735447209353e4b3c4349479b4',
+    platform: 'spotify',
+    duration: '3:48',
+    uri: 'spotify:track:6habFhsOp2NvshLv26DqMb'
+  },
+  {
+    id: 's8',
+    title: 'Cruel Summer',
+    artist: 'Taylor Swift',
+    albumCover: 'https://i.scdn.co/image/ab67616d0000b273e787cffec20aa2a396a61647',
+    platform: 'spotify',
+    duration: '2:58',
+    uri: 'spotify:track:1BxfuPKGuaTgP7aM0BzxDQ'
   }
 ];
 
@@ -107,7 +144,7 @@ export const MOCK_REVIEWS: Review[] = [
         id: 's_mock_espresso',
         title: 'Espresso',
         artist: 'Sabrina Carpenter',
-        albumCover: 'https://picsum.photos/300/300?random=99',
+        albumCover: 'https://i.scdn.co/image/ab67616d0000b273659cd4673230913b3918e0d5',
         platform: 'spotify',
         duration: '2:55'
     },
